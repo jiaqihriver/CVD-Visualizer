@@ -188,6 +188,31 @@ export class SceneManager {
     this.resizeListeners.add(cb);
   }
 
+  /**
+   * Fits a wide model into a portrait viewport by pulling the camera back
+   * along its current direction. Used once at start-up on phones / tablets.
+   */
+  frameWideModel(box: THREE.Box3, margin = 1.03): void {
+    if (box.isEmpty()) return;
+    const size = box.getSize(new THREE.Vector3());
+    const centre = box.getCenter(new THREE.Vector3());
+    const planDiagonal = Math.hypot(size.x, size.y);
+    const vHalf = THREE.MathUtils.degToRad(this.camera.fov * 0.5);
+    const hHalf = Math.atan(Math.tan(vHalf) * this.camera.aspect);
+    const distance = Math.min(
+      this.controls.maxDistance,
+      Math.max(12, (planDiagonal * 0.5) / Math.tan(hHalf) * margin),
+    );
+
+    const dir = this.camera.position.clone().sub(this.controls.target);
+    if (dir.lengthSq() < 0.0001) dir.set(0.7, 0.9, 0.55);
+    dir.normalize();
+
+    this.controls.target.copy(centre);
+    this.camera.position.copy(centre).addScaledVector(dir, distance);
+    this.controls.update();
+  }
+
   setBloom(enabled: boolean): void {
     this.bloom.enabled = enabled;
   }

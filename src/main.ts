@@ -105,6 +105,11 @@ async function boot(): Promise<void> {
   const model = buildCVDModel(registry);
   sceneManager.scene.add(model);
 
+  /* portrait screens get a wider framing so the whole bench is visible */
+  if (window.innerWidth < window.innerHeight) {
+    sceneManager.frameWideModel(new THREE.Box3().setFromObject(model));
+  }
+
   const gasFlow = new GasFlow();
   sceneManager.scene.add(gasFlow.group);
 
