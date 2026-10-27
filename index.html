@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#05080f" />
+    <meta
+      name="description"
+      content="Laboratory-scale chemical vapour deposition (CVD) system for 2D-material growth — interactive 3D teardown built entirely with procedural Three.js geometry."
+    />
+    <title>CVD 2D-Material Growth System · Interactive 3D Teardown</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23070d16'/%3E%3Crect x='12' y='26' width='40' height='12' rx='6' fill='none' stroke='%2336d9e8' stroke-width='3'/%3E%3Ccircle cx='32' cy='32' r='4' fill='%2336d9e8'/%3E%3C/svg%3E"
+    />
+  </head>
+  <body>
+    <div id="app">
+      <canvas id="scene" aria-label="CVD system 3D scene"></canvas>
+
+      <div class="scene-fx" aria-hidden="true">
+        <div class="scene-glow"></div>
+        <div class="scene-vignette"></div>
+        <div class="scene-scanlines"></div>
+        <div class="corner corner-tl"></div>
+        <div class="corner corner-tr"></div>
+        <div class="corner corner-bl"></div>
+        <div class="corner corner-br"></div>
+      </div>
+
+      <div id="annotation-layer" aria-hidden="true">
+        <svg id="leader-svg"></svg>
+        <div id="annotations"></div>
+      </div>
+
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark">
+            <svg viewBox="0 0 40 40" aria-hidden="true">
+              <rect x="3" y="13" width="34" height="14" rx="7" fill="none" stroke="currentColor" stroke-width="1.6" />
+              <circle cx="20" cy="20" r="4.4" fill="none" stroke="currentColor" stroke-width="1.6" />
+              <path d="M20 8v5M20 27v5M6 20H1M39 20h-5" stroke="currentColor" stroke-width="1.2" opacity=".55" />
+            </svg>
+          </div>
+          <div class="brand-text">
+            <h1>2D-Material CVD System <span>INTERACTIVE TEARDOWN</span></h1>
+            <p>Horizontal Tube Furnace · Programmatic Digital Twin</p>
+          </div>
+        </div>
+
+        <div class="status-cluster">
+          <div class="state-chip" id="state-chip">
+            <i class="state-dot"></i>
+            <div>
+              <b id="state-label">ASSEMBLED</b>
+              <small id="state-sub">SYSTEM STATE</small>
+            </div>
+          </div>
+          <div class="progress-wrap">
+            <div class="progress-track"><i id="explode-progress"></i></div>
+            <span id="explode-percent">0%</span>
+          </div>
+        </div>
+
+        <nav class="toolbar">
+          <button class="btn btn-primary" id="btn-explode-all" type="button">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3v6M10 11v6M4 7l5 3M16 7l-5 3M4 13l5-3M16 13l-5-3" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round" /></svg>
+            <span id="explode-all-text">Explode System</span>
+          </button>
+          <button class="btn btn-ghost is-on" id="btn-flow" type="button" title="Show / hide gas-flow animation">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 7h8a2.5 2.5 0 1 0-2.5-2.5M3 13h11a2.5 2.5 0 1 1-2.5 2.5" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round" /></svg>
+            <span>Gas Flow</span>
+          </button>
+          <button class="btn btn-ghost is-on is-hot" id="btn-heat" type="button" title="Furnace heating / cool-down">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2.6c2.6 3.2 4.4 5.4 4.4 8.1a4.4 4.4 0 1 1-8.8 0c0-1.2.5-2.3 1.4-3.6.4 1.3 1.1 2 2 2.3-.3-2.4.3-4.6 1-6.8Z" stroke="currentColor" fill="none" stroke-width="1.3" stroke-linejoin="round"/></svg>
+            <span>Heating</span>
+          </button>
+          <button class="btn btn-ghost is-on" id="btn-click-mode" type="button" title="Single click explodes / restores a part">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7 3.5 16 10l-4.2.9L14 16l-2.4 1.2-2.2-5L7 15.4z" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linejoin="round" /></svg>
+            <span>Click to Explode</span>
+          </button>
+          <button class="btn btn-icon" id="btn-panels" type="button" title="Show / hide side panels" aria-label="Show or hide side panels">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="3" y="4" width="4.5" height="12" rx="1.2" stroke="currentColor" fill="none" stroke-width="1.3" /><rect x="10.5" y="4" width="6.5" height="12" rx="1.2" stroke="currentColor" fill="none" stroke-width="1.3" /></svg>
+          </button>
+          <button class="btn btn-icon" id="btn-help" type="button" title="Interaction guide" aria-label="Interaction guide">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7" stroke="currentColor" fill="none" stroke-width="1.3" /><path d="M8 8a2 2 0 1 1 2.7 1.9c-.6.25-.7.7-.7 1.3M10 14.2v.1" stroke="currentColor" fill="none" stroke-width="1.4" stroke-linecap="round" /></svg>
+          </button>
+        </nav>
+      </header>
+
+      <aside class="panel panel-left" id="panel-left">
+        <div class="panel-head">
+          <div>
+            <span class="eyebrow">BOM / COMPONENTS</span>
+            <h2>Component Tree</h2>
+          </div>
+          <span class="badge" id="part-count">0</span>
+        </div>
+        <div class="panel-tools">
+          <label class="search">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.5" stroke="currentColor" fill="none" stroke-width="1.2" /><path d="m10.4 10.4 3 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" /></svg>
+            <input id="search-input" type="search" placeholder="Search parts or subsystems…" autocomplete="off" />
+          </label>
+        </div>
+        <div class="panel-body" id="part-tree"></div>
+        <div class="panel-foot">
+          <span class="legend"><i class="dot dot-idle"></i>Assembled</span>
+          <span class="legend"><i class="dot dot-live"></i>Exploded</span>
+          <span class="legend"><i class="dot dot-hot"></i>Moving</span>
+        </div>
+      </aside>
+
+      <aside class="panel panel-right" id="panel-right">
+        <div class="panel-head">
+          <div>
+            <span class="eyebrow">INSPECTOR / PARAMETERS</span>
+            <h2>Part Details</h2>
+          </div>
+          <span class="badge badge-code" id="detail-code">SYS</span>
+        </div>
+        <div class="panel-body" id="detail-body"></div>
+      </aside>
+
+      <div class="view-dock" id="view-dock">
+        <button class="dock-btn is-on" data-view="iso" type="button">ISO</button>
+        <button class="dock-btn" data-view="front" type="button">Front</button>
+        <button class="dock-btn" data-view="gas" type="button">Gas Side</button>
+        <button class="dock-btn" data-view="vacuum" type="button">Vacuum Side</button>
+        <button class="dock-btn" data-view="top" type="button">Top</button>
+        <button class="dock-btn" data-view="interior" type="button">Chamber</button>
+        <span class="dock-sep"></span>
+        <button class="dock-btn" data-view="reset" type="button" title="Reset view (R)">Reset</button>
+      </div>
+
+      <footer class="bottombar">
+        <div class="hints">
+          <span><b>Drag</b> Rotate</span>
+          <span><b>Wheel</b> Zoom</span>
+          <span><b>Right-drag</b> Pan</span>
+          <span><b>Click</b> Select / Explode</span>
+          <span><b>Double-click</b> Focus</span>
+          <span class="hint-dim">Keys <b>E</b> Explode <b>A</b> Restore <b>R</b> Reset <b>Esc</b> Deselect</span>
+        </div>
+        <div class="sys-readout">
+          <span class="sys-dot"></span>
+          <span id="fps-readout">-- FPS</span>
+          <span class="sys-divider"></span>
+          <span id="render-readout">WEBGL</span>
+        </div>
+      </footer>
+
+      <div class="tooltip" id="tooltip" role="status">
+        <span class="tooltip-dot"></span>
+        <div>
+          <b id="tooltip-title">Part</b>
+          <small id="tooltip-sub">Click to inspect</small>
+        </div>
+      </div>
+
+      <div class="toast-wrap" id="toast-wrap" aria-live="polite"></div>
+
+      <div class="intro" id="intro" hidden>
+        <div class="intro-card">
+          <span class="eyebrow">LABORATORY DIGITAL TWIN / 01</span>
+          <h2>Horizontal Tube CVD<br /><em>Interactive 3D Teardown</em></h2>
+          <p class="intro-lead">
+            All 23 core components are procedural Three.js geometry — no external model files.
+            Click a part to watch it slide along its assembly direction, and inspect its
+            materials, temperature zones, gas flows and interfaces.
+          </p>
+          <div class="intro-grid">
+            <div class="intro-item"><b>Drag / Wheel</b><span>Orbit and zoom the view</span></div>
+            <div class="intro-item"><b>Single Click</b><span>Select and explode / restore</span></div>
+            <div class="intro-item"><b>Double Click</b><span>Fly the camera to the part</span></div>
+            <div class="intro-item"><b>Component Tree</b><span>Batch control by subsystem</span></div>
+          </div>
+          <div class="intro-note">
+            <i></i>
+            Every dimension, temperature and flow value is a <b>teaching schematic</b> — it does not
+            represent the rated specification of any real instrument.
+          </div>
+          <div class="intro-actions">
+            <button class="btn btn-primary btn-lg" id="btn-enter" type="button">Enter the 3D Scene</button>
+            <button class="btn btn-ghost btn-lg" id="btn-intro-explode" type="button">Explode the System First</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="loader" id="loader">
+        <div class="loader-inner">
+          <div class="loader-ring"></div>
+          <div class="loader-label">Building procedural CVD geometry</div>
+          <div class="loader-bar"><i id="loader-bar"></i></div>
+          <div class="loader-sub" id="loader-sub">INITIALIZING SCENE</div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      /* The development source page cannot run from the file system.
+         Point anyone who double-clicks it at the standalone build. */
+      (function () {
+        if (location.protocol !== 'file:') return;
+        function explain() {
+          var dev = document.querySelector('script[src*="/src/main.ts"]');
+          var built = document.querySelector('script[src*="assets/"]');
+          if (!dev && !built) return;
+          var label = document.querySelector('.loader-label');
+          var sub = document.getElementById('loader-sub');
+          if (label) label.textContent = 'This page must be opened differently';
+          if (sub) {
+            sub.innerHTML = dev
+              ? 'This is the development source. Open <b style="color:#36d9e8">CVD-Visualizer.html</b> ' +
+                'in this folder, or run <b style="color:#36d9e8">npm run dev</b> from a terminal.'
+              : 'This production build must be served over HTTP. Run ' +
+                '<b style="color:#36d9e8">npm run preview</b>, or open ' +
+                '<b style="color:#36d9e8">CVD-Visualizer.html</b> instead.';
+            sub.style.textTransform = 'none';
+            sub.style.letterSpacing = '0';
+            sub.style.lineHeight = '1.9';
+            sub.style.fontSize = '11px';
+          }
+          var bar = document.getElementById('loader-bar');
+          if (bar) bar.style.background = '#36d9e8';
+        }
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', explain);
+        } else {
+          explain();
+        }
+      })();
+    </script>
+
+    <noscript>
+      <div style="position:fixed;inset:0;display:grid;place-items:center;background:#05080f;color:#e6eef8;font-family:system-ui,sans-serif;z-index:99;text-align:center;padding:24px">
+        <p>This visualisation requires JavaScript and WebGL 2.<br />Please enable JavaScript and reload the page.</p>
+      </div>
+    </noscript>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

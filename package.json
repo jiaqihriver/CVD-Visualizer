@@ -1,0 +1,27 @@
+{
+  "name": "cvd-visualizer",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Laboratory-scale CVD (chemical vapour deposition) system for 2D-material growth — interactive procedural Three.js teardown.",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "build:single": "tsc --noEmit && vite build --mode single && node scripts/copy-single.mjs",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "serve": "vite preview --host --port 4173"
+  },
+  "dependencies": {
+    "three": "^0.186.1"
+  },
+  "devDependencies": {
+    "@types/three": "^0.186.0",
+    "typescript": "^5.9.3",
+    "vite": "^7.1.12",
+    "vite-plugin-singlefile": "^2.3.0"
+  },
+  "engines": {
+    "node": ">=20.19"
+  }
+}
